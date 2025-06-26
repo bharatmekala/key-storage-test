@@ -1,0 +1,14 @@
+{
+  "id": "key_1750955619385849_9254a5d3",
+  "timestamp": "2025-06-26T16:33:39.385847",
+  "epoch": 1750970019,
+  "format": "uuid",
+  "key": "c87d3ded-3f4e-4256-bb83-53e93b3261c5",
+  "key_type": "uuid4",
+  "metadata": {
+    "generated_by": "github-key-storage-system",
+    "version": "1.0.0",
+    "length": 36,
+    "entropy_bits": 122
+  }
+}
