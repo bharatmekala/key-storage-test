@@ -1,0 +1,43 @@
+import boto3
+import os
+import random
+import string
+
+waf = boto3.client('wafv2')
+ACL_NAME = 'auth-header-acl'
+SCOPE = 'REGIONAL'  # Use CLOUDFRONT if protecting CloudFront
+
+def generate_key(length=32):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def lambda_handler(event, context):
+    key = generate_key()
+
+    # Get ACL ID and LockToken
+    acl = waf.get_web_acl(Name=ACL_NAME, Scope=SCOPE)
+    acl_id = acl['WebACL']['Id']
+    lock_token = acl['LockToken']
+    rules = acl['WebACL']['Rules']
+
+    # Update the rule with the new key
+    for rule in rules:
+        if rule['Name'] == 'auth-header-match':
+            rule['Statement']['ByteMatchStatement']['SearchString'] = key.encode()
+
+    waf.update_web_acl(
+        Name=ACL_NAME,
+        Scope=SCOPE,
+        Id=acl_id,
+        LockToken=lock_token,
+        DefaultAction=acl['WebACL']['DefaultAction'],
+        VisibilityConfig=acl['WebACL']['VisibilityConfig'],
+        Rules=rules
+    )
+
+    print(f"Updated WAF rule with new key: {key}")
+
+    # Return key for logging or downstream use
+    return {
+        'statusCode': 200,
+        'newKey': key
+    }
