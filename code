@@ -1,21 +1,25 @@
 import boto3
+from boto3.session import Session
 
-client = boto3.client('elbv2')
+# Use your AWS CLI profile
+session = Session(profile_name='GR_GG_COF')
 
-listener_arn = 'arn:aws:elasticloadbalancing:region:account-id:listener/app/your-listener'
-target_group_arn = 'arn:aws:elasticloadbalancing:region:account-id:targetgroup/your-target-group'
-header_name = 'x-api-key'
-expected_value = 'abc123'
+# Create ELBv2 client in the correct region
+client = session.client('elbv2', region_name='us-east-1')
 
-response = client.create_rule(
-    ListenerArn=listener_arn,
-    Priority=10,  # Must be unique
+# Replace with your actual ARNs
+rule_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener-rule/app/my-alb/abc123/def456"
+target_group_arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-target-group/xyz789"
+
+# Update the rule to check for header "x-api-key" == "abc123"
+response = client.modify_rule(
+    RuleArn=rule_arn,
     Conditions=[
         {
             'Field': 'http-header',
             'HttpHeaderConfig': {
-                'HttpHeaderName': header_name,
-                'Values': [expected_value]
+                'HttpHeaderName': 'x-api-key',
+                'Values': ['abc123']
             }
         }
     ],
@@ -27,4 +31,5 @@ response = client.create_rule(
     ]
 )
 
-print("Created rule:", response['Rules'][0]['RuleArn'])
+print("✅ Rule updated successfully!")
+print(response['Rules'][0])
